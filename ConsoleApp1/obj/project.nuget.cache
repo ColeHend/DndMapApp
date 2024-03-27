@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "FgWt1xiWzTnIcfIBb/TkF/8ApIMS4gI7y1rYW/nArqUpvFCravRX8zGWvhGKmnu5Rh1Czm/oFnwi70E0hOYrFw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\darkg\\Desktop\\Projects\\DndMapApp\\ConsoleApp1\\ConsoleApp1.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\darkg\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

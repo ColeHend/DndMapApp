@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="./srdJson/classes.json" />
+    <EmbeddedResource Include="./srdJson/subclasses.json" />
+    <EmbeddedResource Include="./srdJson/abilityScores.json" />
+    <EmbeddedResource Include="./srdJson/conditions.json" />
+    <EmbeddedResource Include="./srdJson/damageTypes.json" />
+    <EmbeddedResource Include="./srdJson/equipment.json" />
+    <EmbeddedResource Include="./srdJson/equipmentCategories.json" />
+    <EmbeddedResource Include="./srdJson/features.json" />
+    <EmbeddedResource Include="./srdJson/languages.json" />
+    <EmbeddedResource Include="./srdJson/levels.json" />
+    <EmbeddedResource Include="./srdJson/magicSchools.json" />
+    <EmbeddedResource Include="./srdJson/monsters.json" />
+    <EmbeddedResource Include="./srdJson/proficiencies.json" />
+    <EmbeddedResource Include="./srdJson/races.json" />
+    <EmbeddedResource Include="./srdJson/skills.json" />
+    <EmbeddedResource Include="./srdJson/spellcasting.json" />
+    <EmbeddedResource Include="./srdJson/spells.json" />
+    <EmbeddedResource Include="./srdJson/startingEquipment.json" />
+    <EmbeddedResource Include="./srdJson/subraces.json" />
+    <EmbeddedResource Include="./srdJson/traits.json" />
+    <EmbeddedResource Include="./srdJson/weaponProperties.json" />
+
+
+
+
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

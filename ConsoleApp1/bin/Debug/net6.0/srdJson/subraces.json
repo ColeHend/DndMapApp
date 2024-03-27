@@ -1,0 +1,264 @@
+[
+  {
+    "id": "1",
+    "name": "Hill Dwarf",
+    "race": {
+      "ref": "races/1",
+      "name": "Dwarf"
+    },
+    "desc": "As a hill dwarf, you have keen senses, deep intuition, and remarkable resilience.",
+    "ability_bonuses": [
+      {
+        "name": "WIS",
+        "ref": "ability-scores/5",
+        "bonus": 1
+      }
+    ],
+    "ability_bonus_options": {},
+    "starting_proficiencies": [],
+    "starting_proficiency_options": {},
+    "languages": [],
+    "language_options": {},
+    "racial_traits": [
+      {
+        "ref": "traits/4",
+        "name": "Dwarven Toughness"
+      }
+    ],
+    "racial_trait_options": {},
+    "url": "http://www.dnd5eapi.co/api/subraces/1"
+  },
+  {
+    "id": "2",
+    "name": "High Elf",
+    "race": {
+      "ref": "races/2",
+      "name": "Elf"
+    },
+    "desc": "As a high elf, you have a keen mind and a mastery of at least the basics of magic. In many fantasy gaming worlds, there are two kinds of high elves. One type is haughty and reclusive, believing themselves to be superior to non-elves and even other elves. The other type is more common and more friendly, and often encountered among humans and other races.",
+    "ability_bonuses": [
+      {
+        "name": "INT",
+        "ref": "ability-scores/4",
+        "bonus": 1
+      }
+    ],
+    "ability_bonus_options": {},
+    "starting_proficiencies": [
+      {
+        "ref": "proficiencies/42",
+        "name": "Longswords"
+      },
+      {
+        "ref": "proficiencies/48",
+        "name": "Shortswords"
+      },
+      {
+        "ref": "proficiencies/33",
+        "name": "Shortbows"
+      },
+      {
+        "ref": "proficiencies/56",
+        "name": "Longbows"
+      }
+    ],
+    "starting_proficiency_options": {},
+    "languages": [],
+    "language_options": {
+      "choose": 1,
+      "from": [
+        {
+          "ref": "languages/2",
+          "name": "Dwarvish"
+        },
+        {
+          "ref": "languages/4",
+          "name": "Giant"
+        },
+        {
+          "ref": "languages/5",
+          "name": "Gnomish"
+        },
+        {
+          "ref": "languages/6",
+          "name": "Goblin"
+        },
+        {
+          "ref": "languages/7",
+          "name": "Halfling"
+        },
+        {
+          "ref": "languages/8",
+          "name": "Orc"
+        },
+        {
+          "ref": "languages/9",
+          "name": "Abyssal"
+        },
+        {
+          "ref": "languages/10",
+          "name": "Celestial"
+        },
+        {
+          "ref": "languages/11",
+          "name": "Draconic"
+        },
+        {
+          "ref": "languages/12",
+          "name": "Deep Speech"
+        },
+        {
+          "ref": "languages/13",
+          "name": "Infernal"
+        },
+        {
+          "ref": "languages/14",
+          "name": "Primordial"
+        },
+        {
+          "ref": "languages/15",
+          "name": "Sylvan"
+        },
+        {
+          "ref": "languages/16",
+          "name": "Undercommon"
+        }
+      ],
+      "type": "language"
+    },
+    "racial_traits": [],
+    "racial_trait_options": {
+      "choose": 1,
+      "from": [
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Light"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Mage Hand"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Mending"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Message"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Minor Illusion"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Acid Splash"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Prestidigitation"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Ray of Frost"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Shocking Grasp"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: True Strike"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Chill Touch"
+        },
+        {
+          "ref": "traits/10",
+          "name": "High Elf Cantrip: Dancing Lights"
+        }
+      ],
+      "type": "trait"
+    },
+    "url": "http://www.dnd5eapi.co/api/subraces/2"
+  },
+  {
+    "id": "3",
+    "name": "Lightfoot Halfling",
+    "race": {
+      "ref": "races/3",
+      "name": "Halfling"
+    },
+    "desc": "As a lightfoot halfling, you can easily hide from notice, even using other people as cover. You're inclined to be affable and get along well with others. Lightfoots are more prone to wanderlust than other halflings, and often dwell alongside other races or take up a nomadic life.",
+    "ability_bonuses": [
+      {
+        "name": "CHA",
+        "ref": "ability-scores/6",
+        "bonus": 1
+      }
+    ],
+    "ability_bonus_options": {},
+    "starting_proficiencies": [],
+    "starting_proficiency_options": {},
+    "languages": [],
+    "language_options": {},
+    "racial_traits": [
+      {
+        "ref": "traits/23",
+        "name": "Naturally Stealthy"
+      }
+    ],
+    "racial_trait_options": {},
+    "url": "http://www.dnd5eapi.co/api/subraces/3"
+  },
+  {
+    "id": "4",
+    "name": "Rock Gnome",
+    "race": {
+      "ref": "races/6",
+      "name": "Gnome"
+    },
+    "desc": "As a rock gnome, you have a natural inventiveness and hardiness beyond that of other gnomes.",
+    "ability_bonuses": [
+      {
+        "name": "CON",
+        "ref": "ability-scores/3",
+        "bonus": 1
+      }
+    ],
+    "starting_proficiencies": [],
+    "starting_proficiency_options": {},
+    "languages": [
+      {
+        "ref": "languages/1",
+        "name": "Common"
+      },
+      {
+        "ref": "languages/5",
+        "name": "Gnomish"
+      }
+    ],
+    "language_options": {},
+    "racial_traits": [
+      {
+        "name": "Darkvision",
+        "url": "http://www.dnd5eapi.co/api/traits/1"
+      },
+      {
+        "name": "Gnome Cunning",
+        "url": "http://www.dnd5eapi.co/api/traits/19"
+      },
+      {
+        "name": "Artificer's Lore",
+        "url": "http://www.dnd5eapi.co/api/traits/20"
+      },
+      {
+        "name": "Tinker",
+        "url": "http://www.dnd5eapi.co/api/traits/21"
+      }
+    ],
+    "racial_trait_options": {},
+    "url": "http://www.dnd5eapi.co/api/subraces/4"
+  }
+]
