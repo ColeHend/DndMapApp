@@ -10,196 +10,498 @@ namespace MyExtensions
     using DndSubClassJson;
     using ClassesDto;
     using System.Linq;
+    using System.Runtime.CompilerServices;
+    using System.Security.Cryptography.X509Certificates;
+    using Newtonsoft.Json;
+    using ConsoleApp1.models.DTO;
+    using DndRacesJson;
+    using DndSubRaceJson;
+    using DndRaceTraitJson;
+    using DndProficencyJson;
+    using DndBackgroundsJson;
+    using DndLanguagesJson;
+    using DndEquipmentCategoryJson;
 
     public static class Extensions
     {
-        public static ClassDto ToClassDto(The5EClasses the5EClasses, List<The5EClassLevels> classLevels, List<The5ESubClasses> subClasses, List<The5EFeatures> features, List<The5EStartingEquipment> startingEquipment, List<The5EEquipment> equipment, List<The5ESpellcasting> spellCasting)
+        private static void AddString(this Dictionary<string, string> dictionary, string key, object? value) 
         {
+            if (value != null)
+            {
+                string theValue = JsonConvert.SerializeObject(value);
+                dictionary.Add(key, theValue);
+            }
+        }
+
+        public static BackgroundEntity ToBackgroundDto(The5EBackgrounds the5EBackgrounds, List<The5EProficency> proficency, List<The5ELanguages> languages, List<The5EEquipment> equipment, bool logs = false)
+        {
+            var newBackground = new BackgroundEntity();
+            newBackground.Name = the5EBackgrounds.Name;
+            newBackground.StartingProficiencies = proficency
+                .Where(x => the5EBackgrounds.StartingProficiencies.Select(y => y.Name).Contains(x.Name))
+                .Select(x => new Feature<string, string>
+                {
+                    Name = x.Type.ToString(),
+                    Value = x.Name
+                })
+                .ToList();
+            newBackground.LanguageChoice = new ChoicesEntity<string>();
+            newBackground.LanguageChoice.Choose = (int)the5EBackgrounds.LanguageOptions.Choose;
+            newBackground.LanguageChoice.Type = the5EBackgrounds.LanguageOptions.Type.ToString();
+            newBackground.LanguageChoice.Choices = languages.Select(x => x.Name).ToList();
+            newBackground.StartingEquipment = the5EBackgrounds.StartingEquipment.Select(x => new ItemDto
+            {
+                Item = x.Equipment.Name,
+                Quantity = (int)x.Quantity
+                
+            }).ToList();
+            newBackground.StartingEquipmentChoices = the5EBackgrounds.StartingEquipmentOptions.Select(x => new EquipmentChoicesDto
+            {
+                Choose = (int)x.Choose,
+                Type = x.Type.ToString(),
+                Choices = new List<ItemDto>
+                {
+                    new ItemDto
+                    {
+                        Item = "Emblem",
+                        Quantity = 1
+                    },
+                    new ItemDto
+                    {
+                        Item = "Reliquary",
+                        Quantity = 1
+                    },
+                    new ItemDto
+                    {
+                        Item = "Amulet",
+                        Quantity = 1
+                    }
+                }
+            }).ToList();
+            newBackground.Feature = new List<Feature<List<string>, string>>
+            {
+                new Feature<List<string>, string>
+                {
+                    Name = the5EBackgrounds.Feature.Name,
+                    Value = the5EBackgrounds.Feature.Desc
+                }
+            };
+            return newBackground;
+        }
+
+        public static RaceEntity ToRaceDto(The5ERaces the5ERaces, List<The5ESubRace> subRaces, List<The5ERaceTrait> raceTraits, List<The5EProficency> proficency, bool logs = false)
+        {
+            // ------------ creation data ------------------------
+            var newRace = new RaceEntity();
+            // 
+            if (logs) Console.WriteLine(" Writing Basics!");
+            newRace.Id = (int)the5ERaces.Id;
+            newRace.Name = the5ERaces.Name;
+            newRace.Speed = the5ERaces.Speed.ToString();
+            newRace.AbilityBonuses = the5ERaces.AbilityBonuses.Select(x => new Feature<int, string>
+            {
+                Name = x.Name,
+                Value = (int)x.Bonus
+            }).ToList();
+            if (the5ERaces.AbilityBonusOptions != null)
+            {
+                newRace.AbilityBonusChoice = new ChoicesEntity<Feature<int, string>>();
+                newRace.AbilityBonusChoice.Choose = (int)(the5ERaces.AbilityBonusOptions.Choose ?? 0);
+                newRace.AbilityBonusChoice.Type = the5ERaces.AbilityBonusOptions.Type != null ? the5ERaces.AbilityBonusOptions.Type.ToString() : string.Empty;
+                newRace.AbilityBonusChoice.Choices = the5ERaces.AbilityBonusOptions.From?
+                    .Select(x => new Feature<int, string>
+                    {
+                        Name = x.Name,
+                        Value = (int)x.Bonus
+                    })
+                    .ToList() ?? new List<Feature<int, string>>();
+            }
+            newRace.Alignment = the5ERaces.Alignment;
+            newRace.Age = the5ERaces.Age;
+            newRace.Size = the5ERaces.Size;
+            newRace.SizeDescription = the5ERaces.SizeDescription;
+            newRace.StartingProficencies = proficency
+                .Where(x => the5ERaces.StartingProficiencies.Select(y => y.Name).Contains(x.Name))
+                .Select(x => new Feature<string, string>
+                {
+                    Name = x.Type.ToString(),
+                    Value = x.Name
+                })
+                .ToList();
+            if (the5ERaces.StartingProficiencyOptions != null)
+            {
+                newRace.StartingProficenciesChoice = new ChoicesEntity<Feature<string, string>>();
+                newRace.StartingProficenciesChoice.Choose = (int)(the5ERaces.StartingProficiencyOptions.Choose ?? 0);
+                newRace.StartingProficenciesChoice.Type = the5ERaces.StartingProficiencyOptions.Type != null ? the5ERaces.StartingProficiencyOptions.Type.ToString() : string.Empty;
+                newRace.StartingProficenciesChoice.Choices = proficency
+                    .Where(x => the5ERaces.StartingProficiencyOptions.From?.Select(y => y.Name).Contains(x.Name) ?? false)
+                    .Select(x => new Feature<string, string>
+                    {
+                        Name = x.Name,
+                        Value = x.Type.ToString()
+                    })
+                    .ToList();
+            }
+            newRace.Languages = the5ERaces.Languages.Select(x => x.Name).ToList();
+            if (the5ERaces.LanguageOptions != null)
+            {
+                newRace.LanguageChoice = new ChoicesEntity<string>();
+                newRace.LanguageChoice.Choose = (int)(the5ERaces.LanguageOptions.Choose ?? 0);
+                newRace.LanguageChoice.Type = the5ERaces.LanguageOptions.Type != null ? the5ERaces.LanguageOptions.Type.ToString() : string.Empty;
+                newRace.LanguageChoice.Choices = the5ERaces.LanguageOptions.From?.Select(x => x.Name).ToList() ?? new List<string>();
+            }
+            newRace.LanguageDesc = the5ERaces.LanguageDesc;
+            newRace.Traits = raceTraits
+                .Where(x => the5ERaces.Traits.Select(y => y.Name).Contains(x.Name))
+                .Select(x => new Feature<List<string>, string>
+                {
+                    Name = x.Name,
+                    Value = x.Desc
+                })
+                .ToList();
+            if (the5ERaces.TraitOptions != null)
+            {
+                newRace.TraitChoice = new ChoicesEntity<Feature<List<string>, string>>();
+                newRace.TraitChoice.Choose = (int)(the5ERaces.TraitOptions.Choose ?? 0);
+                newRace.TraitChoice.Type = the5ERaces.TraitOptions.Type != null ? the5ERaces.TraitOptions.Type.ToString() : string.Empty;
+                newRace.TraitChoice.Choices = raceTraits
+                    .Where(x => the5ERaces.TraitOptions.From?.Select(y => y.Name).Contains(x.Name) ?? false)
+                    .Select(x => new Feature<List<string>, string>
+                    {
+                        Name = x.Name,
+                        Value = x.Desc
+                    })
+                    .ToList();
+            }
+            if (subRaces.Count() > 0)
+            {
+                if (logs) Console.WriteLine(" Writing Subraces!");
+                newRace.SubRaces = subRaces.Select(subRace =>
+                {
+                    var newSubRace = new SubRaceEntity();
+                    newSubRace.Id = (int)subRace.Id;
+                    newSubRace.Name = subRace.Name;
+                    newSubRace.Desc = subRace.Desc;
+                    newSubRace.AbilityBonuses = subRace.AbilityBonuses.Select(x => new Feature<int, string>
+                    {
+                        Name = x.Name,
+                        Value = (int)x.Bonus
+                    }).ToList();
+                    if (subRace.AbilityBonusOptions != null)
+                    {
+                        newSubRace.AbilityBonusChoice = new ChoicesEntity<Feature<int, string>>();
+                        newSubRace.AbilityBonusChoice.Choose = (int)subRace.AbilityBonusOptions.Choose;
+                        newSubRace.AbilityBonusChoice.Type = subRace.AbilityBonusOptions.Type != null ? subRace.AbilityBonusOptions.Type.ToString() : string.Empty;
+                        newSubRace.AbilityBonusChoice.Choices = subRace.AbilityBonusOptions.From?
+                            .Select(x => new Feature<int, string>
+                            {
+                                Name = x.Name,
+                                Value = (int)x.Bonus
+                            })
+                            .ToList() ?? new List<Feature<int, string>>();
+                    } else {
+                        newSubRace.AbilityBonusChoice = null;
+                    }
+                    newSubRace.Alignment = subRace.Alignment;
+                    newSubRace.Age = subRace.Age;
+                    newSubRace.Size = subRace.Size;
+                    newSubRace.SizeDescription = subRace.SizeDescription;
+                    newSubRace.StartingProficencies = proficency
+                        .Where(x => subRace.StartingProficiencies.Select(y => y.Name).Contains(x.Name))
+                        .Select(x => new Feature<string, string>
+                        {
+                            Name = x.Type.ToString(),
+                            Value = x.Name
+                        })
+                        .ToList();
+                        if (subRace.StartingProficiencyOptions != null)
+                        {
+                            newSubRace.StartingProficenciesChoice = new ChoicesEntity<Feature<string, string>>();
+                            newSubRace.StartingProficenciesChoice.Choose = (int)subRace.StartingProficiencyOptions.Choose;
+                            newSubRace.StartingProficenciesChoice.Type = subRace.StartingProficiencyOptions.Type != null ? subRace.StartingProficiencyOptions.Type.ToString() : string.Empty;
+                            newSubRace.StartingProficenciesChoice.Choices = proficency
+                                .Where(x => subRace.StartingProficiencyOptions.From?.Select(y => y.Name).Contains(x.Name) ?? false)
+                                .Select(x => new Feature<string, string>
+                                {
+                                    Name = x.Name,
+                                    Value = x.Type.ToString()
+                                })
+                                .ToList();
+                        } else {
+                            newSubRace.StartingProficenciesChoice = null;
+                        }
+                    newSubRace.Languages = subRace.Languages.Select(x => x.Name).ToList();
+                    if (subRace.LanguageOptions != null)
+                    {
+                        newSubRace.LanguageChoice = new ChoicesEntity<string>();
+                        newSubRace.LanguageChoice.Choose = (int)(subRace.LanguageOptions.Choose ?? 0);
+                        newSubRace.LanguageChoice.Type = subRace.LanguageOptions.Type != null ? subRace.LanguageOptions.Type.ToString() : string.Empty;
+                        newSubRace.LanguageChoice.Choices = subRace.LanguageOptions.From?.Select(x => x.Name).ToList() ?? new List<string>();
+                    } else
+                    {
+                        newSubRace.LanguageChoice = null;
+                    }
+                    newSubRace.Traits = raceTraits
+                        .Where(x => subRace.RacialTraits.Select(y => y.Name).Contains(x.Name))
+                        .Select(x => new Feature<List<string>, string>
+                        {
+                            Name = x.Name,
+                            Value = x.Desc
+                        })
+                        .ToList();
+
+                    if (subRace.RacialTraitOptions != null)
+                    {
+                        newSubRace.TraitChoice = new ChoicesEntity<Feature<List<string>, string>>();
+                        newSubRace.TraitChoice.Choose = (int)(subRace.RacialTraitOptions.Choose ?? 0);
+                        newSubRace.TraitChoice.Type = subRace.RacialTraitOptions.Type != null ? subRace.RacialTraitOptions.Type.ToString() : string.Empty;
+                        newSubRace.TraitChoice.Choices = raceTraits
+                            .Where(x => subRace.RacialTraitOptions.From?.Select(y => y.Name).Contains(x.Name) ?? false)
+                            .Select(x => new Feature<List<string>, string>
+                            {
+                                Name = x.Name,
+                                Value = x.Desc
+                            })
+                            .ToList();
+                    } else
+                    {
+                        newSubRace.TraitChoice = null;
+                    }
+                    return newSubRace;
+                }).ToList();
+            } else
+            {
+                newRace.SubRaces = new List<SubRaceEntity>();
+            }
+            
+            return newRace;
+        } 
+
+        public static ClassDto ToClassDto(The5EClasses the5EClasses, List<The5EClassLevels> classLevels, List<The5ESubClasses> subClasses, List<The5EFeatures> features, List<The5EStartingEquipment> startingEquipment, List<The5EEquipment> equipment, List<The5ESpellcasting> spellCasting, bool logs = false)
+        {
+            // ------------ creation data ------------------------
             classLevels = classLevels.Where(x => x.Class.Name == the5EClasses.Name).ToList();
             features = features.Where(x => x.Class.Name == the5EClasses.Name).ToList();
             subClasses = subClasses.Where(x => x.Class.Name == the5EClasses.Name).ToList();
             spellCasting = spellCasting.Where(x => x.Class.Name == the5EClasses.Name).ToList();
             startingEquipment = startingEquipment.Where(x => x.Class.Name == the5EClasses.Name).ToList();
             var equipmentStart = startingEquipment.FirstOrDefault() ?? new The5EStartingEquipment();
-            The5ESpellcasting theCastingDesc;
-            if (spellCasting.Count == 0)
+            The5ESpellcasting theCastingDesc = spellCasting.Count == 0 ? new The5ESpellcasting() : spellCasting.First();
+
+            var levelFeatures = features.Select(x => features.Where(y => y.Level == x.Level).First()).ToList();
+            if (logs) Console.WriteLine($"Writing {the5EClasses.Name}!!");
+            // --------- Class making --------------------------
+            var newClass = new ClassDto();
+            if (logs) Console.WriteLine(" Writing Basics!");
+            newClass.Id = (int)the5EClasses.Id;
+            newClass.Name = the5EClasses.Name;
+            newClass.HitDie = (int)the5EClasses.HitDie;
+            if (logs) Console.WriteLine(" Writing Proficiencies!");
+            newClass.Proficiencies = the5EClasses.Proficiencies.Select(x => x.Name).ToList();
+            newClass.ProficiencyChoices = the5EClasses.ProficiencyChoices.Select(x => new ChoicesEntity<string>
             {
-                theCastingDesc = new The5ESpellcasting();
-            } else
+                Choose = (int)x.Choose,
+                Type = x.Type.ToString(),
+                Choices = x.From.Select(y => y.Name).ToList()
+            }).ToList();
+            if (logs) Console.WriteLine(" Writing Saves!");
+            newClass.SavingThrows = the5EClasses.SavingThrows.Select(x => x.Name).ToList();
+            if (logs) Console.WriteLine(" Writing Levels!");
+
+            if (logs) Console.WriteLine($"   Writing Subclasses!");
+            newClass.Subclasses = subClasses.Select(subClass =>
             {
-                theCastingDesc = spellCasting.First();
-            };
-            return new ClassDto
-            {
-                Id = (int)the5EClasses.Id,
-                Name = the5EClasses.Name,
-                HitDie = (int)the5EClasses.HitDie,
-                ProficiencyChoices = the5EClasses.ProficiencyChoices.Select(x => new ChoicesDto
+                var newSubClass = new SubclassDto();
+                newSubClass.Name = subClass.Name;
+                newSubClass.SubclassFlavor = subClass.SubclassFlavor;
+                newSubClass.Desc = subClass.Desc;
+                newSubClass.Class = subClass.Class.Name;
+                newSubClass.Desc = subClass.Desc;
+                newSubClass.Features = features.Where(x => x.Subclass.Name == subClass.Name).Select(x =>
                 {
-                    Choose = (int)x.Choose,
-                    Type = x.Type.ToString(),
-                    Choices = x.From.Select(y => y.Name).ToList()
-                }).ToList(),
-                Proficiencies = the5EClasses.Proficiencies.Select(x => x.Name).ToList(),
-                SavingThrows = the5EClasses.SavingThrows.Select(x => x.Name).ToList(),
-                ClassLevels = classLevels.Select(x => {
-                    var classLevel = new ClassLevelsDto();
-                    classLevel.Level = (int)x.Level;
-                    classLevel.AbilityScoreBonus = (int)(x.AbilityScoreBonuses ?? 0);
-                    classLevel.ProfBonus = (int)(x.ProfBonus ?? 0);
-                    classLevel.FeatureChoices = x.Features.Select(y => y.Name).ToList();
-                    classLevel.Features = x.Features.Select(y => features.Where(z => z.Name == y.Name).FirstOrDefault()).Select(y => new FeatureDto
+                    var newFeature = new Feature<object, string>();
+                    newFeature.Name = x.Name;
+                    newFeature.Info = new Info<string>();
+                    newFeature.Info.ClassName = x.Class.Name;
+                    newFeature.Info.SubclassName = x.Subclass.Name;
+                    newFeature.Info.Level = (int)(x.Level ?? 0);
+                    if (x.Choice != null)
                     {
-                        Class = y?.Class?.Name ?? the5EClasses.Name,
-                        Subclass = y?.Subclass?.Name,
-                        Name = y?.Name ?? "null",
-                        Desc = y?.Desc?.ToArray() ?? new string[] { "" },
-                        Choice = new ChoicesDto
+                        var newChoice = new EquipmentChoicesDto();
+                        newChoice.Choose = (int)x.Choice.Choose;
+                        newChoice.Type = x.Choice.Type.ToString();
+                        newChoice.Choices = x.Choice.From.Select(y => new ItemDto
                         {
-                            Choose = (int)(y?.Choice?.Choose ?? 0),
-                            Type = y?.Choice?.Type.ToString() ?? "null",
-                            Choices = y?.Choice?.From.Select(z => z.Name).ToList() ?? new List<string>()
-                        }
+                            Item = y.Name,
+                            Desc = features.Where(z => z.Name == y.Name).First().Desc
+                        }).ToList();
+                        newFeature.Value = new ChoiceDesc
+                        {
+                            Choice = newChoice,
+                            Desc = x.Desc
+                        };
+                    } else
+                    {
+                        newFeature.Value = x.Desc;
+                    }
+
+                    return newFeature;
+                }).ToList();
+
+                return newSubClass;
+            }).ToList();
+
+            newClass.ClassLevels = classLevels.Select(classLevel =>
+                {
+                    LevelEntity levelEntity = new LevelEntity();
+                    int currentLevel = (int)classLevel.Level;
+                    if (logs) Console.WriteLine($"  Level {currentLevel} Entity Created!");
+                    levelEntity.Info.Level = currentLevel;
+                    if (logs) Console.WriteLine("    Level");
+                    levelEntity.AbilityScoreBonus = (int)(classLevel.AbilityScoreBonuses ?? 0);
+                    if (logs) Console.WriteLine("    AbilityScoreBonus");
+                    levelEntity.ProfBonus = (int)(classLevel.ProfBonus ?? 0);
+                    if (logs) Console.WriteLine("    ProfBonus");
+                    // classLevel.FeatureChoices = x.Features.Select(y => y.Name).ToList();
+                    if (logs) Console.WriteLine("    Writing Features!");
+                    var currLevel = levelFeatures.Count() > 0 ? levelFeatures.DistinctBy(x => x.Name).Select(x => {
+                            if (x != null) return x;
+                            return new The5EFeatures();
+                        }).ToList() : new List<The5EFeatures>();
+                    if (logs) Console.WriteLine($"     {currLevel.Where(x => x.Level == currentLevel).Count()} features to add!");
+                    levelEntity.Features = currLevel.Where(x => x.Level == currentLevel).Select(feature => {
+                        var newFeature = new Feature<object, string>();
+                        if (logs) Console.WriteLine($"     Adding Feature {feature.Name}");
+                        newFeature.Name = feature.Name;
+                        newFeature.Info = new Info<string>();
+                        newFeature.Info.ClassName = classLevel.Class.Name;
+                        newFeature.Info.SubclassName = classLevel.Subclass.Name;
+                        newFeature.Value = features.Where(x => x.Name == feature.Name).Select(x => new BaseDesc { Name = x.Name, Desc = x.Desc }).ToList().First();
+
+                    return newFeature;
                     }).ToList();
-                    var levelClassSpecific = new ClassSpecificDto();
-                    var classSpecific = x.ClassSpecific;
-                    levelClassSpecific.ActionSurges = (int?)classSpecific?.ActionSurges;
-                    levelClassSpecific.ArcaneRecoveryLevels = (int?)classSpecific?.ArcaneRecoveryLevels;
-                    levelClassSpecific.AdditionalMagicalSecretsMaxLvl = (int?)x.SubclassSpecific?.AdditionalMagicalSecretsMaxLvl;
-                    levelClassSpecific.RageDamageBonus = (int?)classSpecific?.RageDamageBonus;
-                    levelClassSpecific.RageCount = (int?)classSpecific?.RageCount;
-                    levelClassSpecific.AuraRange = (int?)classSpecific?.AuraRange;
-                    levelClassSpecific.BardicInspirationDie = (int?)classSpecific?.BardicInspirationDie;
-                    levelClassSpecific.BrutalCriticalDice = (int?)classSpecific?.BrutalCriticalDice;
-                    levelClassSpecific.ChannelDivinityCharges = (int?)classSpecific?.ChannelDivinityCharges;
-                    levelClassSpecific.CreatingSpellSlots = classSpecific?.CreatingSpellSlots != null ? classSpecific?.CreatingSpellSlots.Select(y => new CreatingSpellSlotDto
+                    //var levelClassSpecific = new Feature<object, string>();
+                    ClassSpecific classSpecific = classLevel.ClassSpecific ?? new ClassSpecific();
+                    if (logs) Console.WriteLine("    Writing Class Specific!");
+                    var levelClassSpecific = new Dictionary<string, string>();
+                    levelClassSpecific.AddString("ActionSurges", classSpecific.ActionSurges);
+                    levelClassSpecific.AddString("ArcaneRecoveryLevels", classSpecific.ArcaneRecoveryLevels);
+                    levelClassSpecific.AddString("AdditionalMagicalSecretsMaxLvl", classSpecific?.MagicalSecretsMax5);
+                    levelClassSpecific.AddString("RageDamageBonus", classSpecific?.RageDamageBonus);
+                    levelClassSpecific.AddString("RageCount", classSpecific?.RageCount);
+                    levelClassSpecific.AddString("AuraRange", classSpecific?.AuraRange);
+                    levelClassSpecific.AddString("BardicInspirationDie", classSpecific?.BardicInspirationDie);
+                    levelClassSpecific.AddString("BrutalCriticalDice", classSpecific?.BrutalCriticalDice);
+                    levelClassSpecific.AddString("ChannelDivinityCharges", classSpecific?.ChannelDivinityCharges);
+                    levelClassSpecific.AddString("CreatingSpellSlots", classSpecific?.CreatingSpellSlots != null ? JsonConvert.SerializeObject(classSpecific?.CreatingSpellSlots.Select(y => new CreatingSpellSlotDto
                     {
                         SpellSlotLevel = (int)y.SpellSlotLevel,
                         SorceryPointCost = (int)y.SorceryPointCost
-                    }).ToList() : null;
-                    levelClassSpecific.WildShapeMaxCr = (int?)classSpecific?.WildShapeMaxCr;
-                    levelClassSpecific.MartialArts = classSpecific?.MartialArts?.DiceValue != null ? new MartialArtsDto
+                    }).ToList()) : null);
+                    levelClassSpecific.AddString("WildShapeMaxCr", classSpecific?.WildShapeMaxCr);
+                    levelClassSpecific.AddString("MartialArts", classSpecific?.MartialArts?.DiceValue != null ? JsonConvert.SerializeObject(new MartialArtsDto
                     {
                         DiceValue = (int)(classSpecific?.MartialArts.DiceValue ?? 0),
                         DiceCount = (int)(classSpecific?.MartialArts.DiceCount ?? 0)
-                    } : null;
-                    levelClassSpecific.SneakAttack = classSpecific?.SneakAttack?.DiceValue != null ? new MartialArtsDto
+                    }) : null);
+                    levelClassSpecific.AddString("SneakAttack", classSpecific?.SneakAttack?.DiceValue != null ? JsonConvert.SerializeObject(new MartialArtsDto
                     {
                         DiceValue = (int)(classSpecific?.SneakAttack.DiceValue ?? 0),
                         DiceCount = (int)(classSpecific?.SneakAttack.DiceCount ?? 0)
-                    } : null;
-                    levelClassSpecific.DestroyUndeadCr = (int?)classSpecific?.DestroyUndeadCr;
-                    levelClassSpecific.ExtraAttacks = (int?)classSpecific?.ExtraAttacks;
-                    levelClassSpecific.FavoredEnemies = (int?)classSpecific?.FavoredEnemies;
-                    levelClassSpecific.FavoredTerrain = (int?)classSpecific?.FavoredTerrain;
-                    levelClassSpecific.IndomitableUses = (int?)classSpecific?.IndomitableUses;
-                    levelClassSpecific.InvocationsKnown = (int?)classSpecific?.InvocationsKnown;
-                    levelClassSpecific.MetamagicKnown = (int?)classSpecific?.MetamagicKnown;
-                    levelClassSpecific.MysticArcanumLevel6 = (int?)classSpecific?.MysticArcanumLevel6;
-                    levelClassSpecific.MagicalSecretsMax5 = (int?)classSpecific?.MagicalSecretsMax5;
-                    levelClassSpecific.MagicalSecretsMax7 = (int?)classSpecific?.MagicalSecretsMax7;
-                    levelClassSpecific.MagicalSecretsMax9 = (int?)classSpecific?.MagicalSecretsMax9;
-                    levelClassSpecific.MysticArcanumLevel7 = (int?)classSpecific?.MysticArcanumLevel7;
-                    levelClassSpecific.MysticArcanumLevel8 = (int?)classSpecific?.MysticArcanumLevel8;
-                    levelClassSpecific.MysticArcanumLevel9 = (int?)classSpecific?.MysticArcanumLevel9;
-                    levelClassSpecific.SongOfRestDie = (int?)classSpecific?.SongOfRestDie;
-                    levelClassSpecific.SorceryPoints = (int?)classSpecific?.SorceryPoints;
-                    levelClassSpecific.UnarmoredMovement = (int?)classSpecific?.UnarmoredMovement;
-                    levelClassSpecific.WildShapeFly = classSpecific?.WildShapeFly;
-                    levelClassSpecific.WildShapeSwim = classSpecific?.WildShapeSwim;
+                    }) : null);
+                    levelClassSpecific.AddString("DestroyUndeadCr", classSpecific?.DestroyUndeadCr);
+                    levelClassSpecific.AddString("ExtraAttacks", classSpecific?.ExtraAttacks);
+                    levelClassSpecific.AddString("FavoredEnemies", classSpecific?.FavoredEnemies);
+                    levelClassSpecific.AddString("FavoredTerrain", classSpecific?.FavoredTerrain);
+                    levelClassSpecific.AddString("IndomitableUses", classSpecific?.IndomitableUses);
+                    levelClassSpecific.AddString("InvocationsKnown", classSpecific?.InvocationsKnown);
+                    levelClassSpecific.AddString("MetamagicKnown", classSpecific?.MetamagicKnown);
+                    levelClassSpecific.AddString("MysticArcanumLevel6", classSpecific?.MysticArcanumLevel6);
+                    levelClassSpecific.AddString("MagicalSecretsMax5", classSpecific?.MagicalSecretsMax5);
+                    levelClassSpecific.AddString("MagicalSecretsMax7", classSpecific?.MagicalSecretsMax7);
+                    levelClassSpecific.AddString("MagicalSecretsMax9", classSpecific?.MagicalSecretsMax9);
+                    levelClassSpecific.AddString("MysticArcanumLevel7", classSpecific?.MysticArcanumLevel7);
+                    levelClassSpecific.AddString("MysticArcanumLevel8", classSpecific?.MysticArcanumLevel8);
+                    levelClassSpecific.AddString("MysticArcanumLevel9", classSpecific?.MysticArcanumLevel9);
+                    levelClassSpecific.AddString("SongOfRestDie", classSpecific?.SongOfRestDie);
+                    levelClassSpecific.AddString("SorceryPoints", classSpecific?.SorceryPoints);
+                    levelClassSpecific.AddString("UnarmoredMovement", classSpecific?.UnarmoredMovement);
+                    levelClassSpecific.AddString("WildShapeFly", classSpecific?.WildShapeFly);
+                    levelClassSpecific.AddString("WildShapeSwim", classSpecific?.WildShapeSwim);
 
-                    classLevel.ClassSpecific = levelClassSpecific;
-                    classLevel.Class = x.Class.Name;
-                    classLevel.Subclass = x.Subclass?.Name ?? string.Empty;
-                    classLevel.Spellcasting = x?.Spellcasting?.ToDictionary(y => y.Key, y => (int)y.Value) ?? new Dictionary<string, int>();
-                    return classLevel;
+                    levelEntity.ClassSpecific = levelClassSpecific;
+                    levelEntity.Info.ClassName = classLevel.Class.Name;
+                    levelEntity.Info.SubclassName = classLevel.Subclass?.Name ?? string.Empty;
+                    if (logs) Console.WriteLine("    Writing Casting?");
+                    levelEntity.Spellcasting = classLevel?.Spellcasting?.ToDictionary(y => y.Key, y => (int)y.Value) ?? new Dictionary<string, int>();
+                    return levelEntity;
+                }).ToList();
+            if (logs) Console.WriteLine("  Writing Equipment!");
+            newClass.StartingEquipment = new StartingEquipmentDto
+            {
+                Class = equipmentStart.Class.Name ?? the5EClasses.Name,
+                Choice1 = equipmentStart.Choice1.Select(y => new EquipmentChoicesDto
+                {
+                    Choose = y?.Choose != null ? (int)y.Choose : 0,
+                    Type = y?.Type != null ? y.Type.ToString() : "null",
+                    Choices = y?.From != null ? y.From.Select(z => new ItemDto
+                    {
+                        Item = z.Item.Name,
+                        Quantity = 0 // Set the quantity to 0 or assign the correct value
+                    }).ToList() : new List<ItemDto>()
                 }).ToList(),
-                Subclasses = subClasses.Select(x => new SubclassDto
+                Choice2 = equipmentStart.Choice2.Select(y => new EquipmentChoicesDto
                 {
-                    Name = x.Name,
-                    Desc = x.Desc.ToList(),
-                    Features = x.Features
-                        .Select(y => y.Name)
-                        .ToList()
-                        .Select(y => features.Where(z => z.Name == y).FirstOrDefault())
-                        .Select(y => new FeatureDto
-                        {
-                            Class = y?.Class?.Name ?? the5EClasses.Name,
-                            Subclass = y?.Subclass?.Name,
-                            Name = y?.Name ?? "null",
-                            Desc = y?.Desc?.ToArray() ?? new string[] { "" },
-                            Choice = new ChoicesDto
-                            {
-                                Choose = (int)(y?.Choice?.Choose ?? 0),
-                                Type = y?.Choice?.Type.ToString() ?? "null",
-                                Choices = y?.Choice?.From.Select(z => z.Name).ToList() ?? new List<string>()
-                            }
-                        }).ToList(),
+                    Choose = y?.Choose != null ? (int)y.Choose : 0,
+                    Type = y?.Type != null ? y.Type.ToString() : "null",
+                    Choices = y?.From != null ? y.From.Select(z => new ItemDto
+                    {
+                        Item = z.Item.Name,
+                        Quantity = 0
+                    }).ToList() : new List<ItemDto>()
                 }).ToList(),
-                Spellcasting = spellCasting.Count > 0 ? new SpellCastingDto
+                Choice3 = equipmentStart.Choice3 != null ? equipmentStart.Choice3.Select(y => new EquipmentChoicesDto
                 {
-                    Name = theCastingDesc?.Class?.Name ?? the5EClasses.Name,
-                    Level = (int)(theCastingDesc?.Level ?? 0),
-                    SpellcastingAbility = theCastingDesc?.SpellcastingAbility?.Name ?? string.Empty,
-                    Info = theCastingDesc.Info?.Select(x => new InfoDto
+                    Choose = y?.Choose != null ? (int)y.Choose : 0,
+                    Type = y?.Type != null ? y.Type.ToString() : "null",
+                    Choices = y?.From != null ? y.From.Select(z => new ItemDto
                     {
-                        Name = x?.Name ?? string.Empty,
-                        Desc = x?.Desc?.ToList() ?? new List<string>()
-                    }).ToList(),
+                        Item = z.Item.Name,
+                        Quantity = (int)z.Quantity,
 
-                } : null,
-                StartingEquipment = new StartingEquipmentDto
+                    }).ToList() : new List<ItemDto>()
+                }).ToList() : new List<EquipmentChoicesDto>(),
+                Choice4 = equipmentStart.Choice4 != null ? equipmentStart.Choice4.Select(y => new EquipmentChoicesDto
                 {
-                    Class = equipmentStart.Class.Name ?? the5EClasses.Name,
-                    Choice1 = equipmentStart.Choice1.Select(y => new ChoicesDto
+                    Choose = y?.Choose != null ? (int)y.Choose : 0,
+                    Type = y?.Type != null ? y.Type.ToString() : "null",
+                    Choices = y?.From != null ? y.From.Select(z => new ItemDto
                     {
-                        Choose = y?.Choose != null ? (int)y.Choose : 0,
-                        Type = y?.Type != null ? y.Type.ToString() : "null",
-                        Choices = y?.From != null ? y.From.Select(z => z.Item.Name).ToList() : new List<string>()
-                    }).ToList(),
-                    Choice2 = equipmentStart.Choice2.Select(y => new ChoicesDto
-                    {
-                        Choose = y?.Choose != null ? (int)y.Choose : 0,
-                        Type = y?.Type != null ? y.Type.ToString() : "null",
-                        Choices = y?.From != null ? y.From.Select(z => z.Item.Name).ToList() : new List<string>()
-                    }).ToList(),
-                    Choice3 = equipmentStart.Choice3 != null ? equipmentStart.Choice3.Select(y => new EquipmentChoicesDto
-                    {
-                        Choose = y?.Choose != null ? (int)y.Choose : 0,
-                        Type = y?.Type != null ? y.Type.ToString() : "null",
-                        Choices = y?.From != null ? y.From.Select(z => new ItemDto
-                        {
-                            Item = z.Item.Name,
-                            Quantity = (int)z.Quantity,
+                        Item = z.Item.Name,
+                        Quantity = (int)z.Quantity,
 
-                        }).ToList() : new List<ItemDto>()
-                    }).ToList() : new List<EquipmentChoicesDto>(),
-                    Choice4 = equipmentStart.Choice4 != null ? equipmentStart.Choice4.Select(y => new EquipmentChoicesDto
+                    }).ToList() : new List<ItemDto>()
+                }).ToList() : new List<EquipmentChoicesDto>(),
+                Choice5 = equipmentStart.Choice5 != null ? equipmentStart.Choice5.Select(y => new EquipmentChoicesDto
+                {
+                    Choose = y?.Choose != null ? (int)y.Choose : 0,
+                    Type = y?.Type != null ? y.Type.ToString() : "null",
+                    Choices = y?.From != null ? y.From.Select(z => new ItemDto
                     {
-                        Choose = y?.Choose != null ? (int)y.Choose : 0,
-                        Type = y?.Type != null ? y.Type.ToString() : "null",
-                        Choices = y?.From != null ? y.From.Select(z => new ItemDto
-                        {
-                            Item = z.Item.Name,
-                            Quantity = (int)z.Quantity,
+                        Item = z.Item.Name,
+                        Quantity = (int)z.Quantity,
 
-                        }).ToList() : new List<ItemDto>()
-                    }).ToList() : new List<EquipmentChoicesDto>(),
-                    Choice5 = equipmentStart.Choice5 != null ? equipmentStart.Choice5.Select(y => new EquipmentChoicesDto
-                    {
-                        Choose = y?.Choose != null ? (int)y.Choose : 0,
-                        Type = y?.Type != null ? y.Type.ToString() : "null",
-                        Choices = y?.From != null ? y.From.Select(z => new ItemDto
-                        {
-                            Item = z.Item.Name,
-                            Quantity = (int)z.Quantity,
-
-                        }).ToList() : new List<ItemDto>()
-                    }).ToList() : new List<EquipmentChoicesDto>(),
-
-                }
+                    }).ToList() : new List<ItemDto>()
+                }).ToList() : new List<EquipmentChoicesDto>(),
 
             };
+
+            return newClass;
         }
-    }
+
+
+
+    };
+
+
 }

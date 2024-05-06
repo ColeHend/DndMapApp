@@ -54,12 +54,32 @@ namespace DndSubRaceJson
         [JsonProperty("racial_trait_options")]
         public LanguageOptionsClass RacialTraitOptions { get; set; }
 
+        [JsonProperty("alignment")]
+        public string Alignment { get; set; }
+
+        [JsonProperty("age")]
+        public string Age { get; set; }
+
+        [JsonProperty("size")]
+        public string Size { get; set; }
+
+        [JsonProperty("size_description")]
+        public string SizeDescription { get; set; }
+
         [JsonProperty("url")]
         public Uri Url { get; set; }
     }
 
     public partial class AbilityBonusOptionsClass
     {
+        [JsonProperty("choose")]
+        public long Choose { get; set; }
+
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        [JsonProperty("from")]
+        public List<AbilityBonus> From { get; set; }
     }
 
     public partial class AbilityBonus

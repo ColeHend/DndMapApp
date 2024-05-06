@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FgWt1xiWzTnIcfIBb/TkF/8ApIMS4gI7y1rYW/nArqUpvFCravRX8zGWvhGKmnu5Rh1Czm/oFnwi70E0hOYrFw==",
+  "dgSpecHash": "801WoPUf3yYbgM8YB/1V+9l7JuWXCVzVqViRBuCC2xjt1ItlRUsB3KxsPp4Xg/218QhQKP1gq4tMM7w0N3Z2mw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\darkg\\Desktop\\Projects\\DndMapApp\\ConsoleApp1\\ConsoleApp1.csproj",
+  "projectFilePath": "C:\\Users\\darkg\\Desktop\\Projects\\Current\\DndMapApp\\ConsoleApp1\\ConsoleApp1.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\darkg\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
   ],

@@ -18,6 +18,9 @@ using DndRaceTraitJson;
 using DndSubRaceJson;
 using DndSpellCastingJson;
 using Newtonsoft.Json;
+using DndProficencyJson;
+using DndBackgroundsJson;
+using DndFeatsJson;
 
 class ReadSrd
 {
@@ -177,7 +180,7 @@ class ReadSrd
 
     public List<The5ERaceTrait> readRaceTraitsJson()
     {
-        using (StreamReader r = new StreamReader("./srdJson/raceTraits.json"))
+        using (StreamReader r = new StreamReader("./srdJson/traits.json"))
         {
             string json = r.ReadToEnd();
             return The5ERaceTrait.FromJson(json);
@@ -201,4 +204,32 @@ class ReadSrd
             return The5ESpellcasting.FromJson(json);
         }
     }
+
+    public List<The5EProficency> readProficencyJson()
+    {
+        using (StreamReader r = new StreamReader("./srdJson/proficiencies.json"))
+        {
+            string json = r.ReadToEnd();
+            return The5EProficency.FromJson(json);
+        }
+    }
+
+    public List<The5EBackgrounds> readBackgroundsJson()
+    {
+        using (StreamReader r = new StreamReader("./srdJson/backgrounds.json"))
+        {
+            string json = r.ReadToEnd();
+            return The5EBackgrounds.FromJson(json);
+        }
+    }
+
+    public List<The5EFeats> readFeatsJson()
+    {
+        using (StreamReader r = new StreamReader("./srdJson/feats.json"))
+        {
+            string json = r.ReadToEnd();
+            return The5EFeats.FromJson(json);
+        }
+    }
+
 }

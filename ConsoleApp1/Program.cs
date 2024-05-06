@@ -22,6 +22,9 @@ using ClassesDto;
 using Newtonsoft.Json;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using DndProficencyJson;
+using DndBackgroundsJson;
+using DndFeatsJson;
 
 
 
@@ -30,33 +33,43 @@ void Main()
     var readSrd = new ReadSrd();
     // Dto && Models Created
     Console.WriteLine("Reading Files!");
+    // -------------------------------
+    List<The5EEquipment> equipment = readSrd.readEquipmentJson();
+    // --------- Classes ------------
     List<The5EClasses> classes = readSrd.readClassesJson();
     List<The5EClassLevels> classLevels = readSrd.readClassLevelsJson();
     List<The5ESubClasses> subClasses = readSrd.readSubClassesJson();
     List<The5EFeatures> features = readSrd.readFeaturesJson();
     List<The5EStartingEquipment> startingEquipment = readSrd.readStartingEquipmentJson();
-    List<The5EEquipment> equipment = readSrd.readEquipmentJson();
     List<The5ESpellcasting> spellCasting = readSrd.readSpellCastingJson();
-
-    List<The5ESpells> spells = readSrd.readSpellsJson();
-    // Dto to be created
-
-    // List<The5EEquipmentCategory> equipmentCategories = readSrd.readEquipmentCategoryJson();
-    // List<The5ESkills> skills = readSrd.readSkillsJson();
-    // List<The5EAbilityScore> abilityScores = readSrd.readAbilityScoreJson();
-    // List<The5EConditions> conditions = readSrd.readConditionsJson();
-    // List<The5EDamageType> damageTypes = readSrd.readDamageTypesJson();
-    // List<The5ELanguages> languages = readSrd.readLanguagesJson();
-    // List<The5EMagicSchool> magicSchools = readSrd.readMagicSchoolsJson();
-    // List<The5EMonsters> monsters = readSrd.readMonstersJson();
-    // List<The5ERaceTrait> raceTraits = readSrd.readRaceTraitsJson();
-    // List<The5ERaces> races = readSrd.readRacesJson();
-    // List<The5ESubRace> subRaces = readSrd.readSubRacesJson();
-    Console.WriteLine("Creating DTOs!");
+    Console.WriteLine("Writing Files!");
     var theClasses = classes.Select(theClass => Extensions.ToClassDto(theClass, classLevels, subClasses, features, startingEquipment, equipment, spellCasting));
 
-    Console.WriteLine("Writing Files!");
     readSrd.WriteJson("classes", theClasses);
+    // -------------------------------
+    List<The5EProficency> proficencies = readSrd.readProficencyJson();
+    // --------- Races -------------
+    List<The5ERaceTrait> raceTraits = readSrd.readRaceTraitsJson();
+    List<The5ERaces> races = readSrd.readRacesJson();
+    List<The5ESubRace> subRaces = readSrd.readSubRacesJson();
+    var theRaces = races.Select(theRace => Extensions.ToRaceDto(theRace, subRaces, raceTraits, proficencies));
+    
+    readSrd.WriteJson("races", theRaces);
+    // ------ Backgrounds -----------
+    List<The5EBackgrounds> backgrounds = readSrd.readBackgroundsJson();
+    List<The5ELanguages> languages = readSrd.readLanguagesJson();
+
+    var theBackgrounds = backgrounds.Select(theBackground => Extensions.ToBackgroundDto(theBackground, proficencies, languages, equipment));
+
+    readSrd.WriteJson("backgrounds", theBackgrounds);
+
+    // ------- Feats ---------
+    List<The5EFeats> feats = readSrd.readFeatsJson();
+
+    // ------- Spells --------
+    List<The5ESpells> spells = readSrd.readSpellsJson();
+
+    // ------- Equipment --------
     
 }
 
