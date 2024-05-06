@@ -33,6 +33,8 @@ namespace MyExtensions
             }
         }
 
+        
+
         public static BackgroundEntity ToBackgroundDto(The5EBackgrounds the5EBackgrounds, List<The5EProficency> proficency, List<The5ELanguages> languages, List<The5EEquipment> equipment, bool logs = false)
         {
             var newBackground = new BackgroundEntity();
