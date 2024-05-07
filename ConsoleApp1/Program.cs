@@ -25,6 +25,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 using DndProficencyJson;
 using DndBackgroundsJson;
 using DndFeatsJson;
+using SecondSpells5e;
+using SRDSpellsjson;
 
 
 
@@ -33,8 +35,12 @@ void Main()
     var readSrd = new ReadSrd();
     // Dto && Models Created
     Console.WriteLine("Reading Files!");
-    // -------------------------------
+    // ------- Equipment --------
     List<The5EEquipment> equipment = readSrd.readEquipmentJson();
+    var the5EEquipment = equipment.Select(equip => Extensions.ToItemDto(equip));
+
+    readSrd.WriteJson("equipment", the5EEquipment);
+
     // --------- Classes ------------
     List<The5EClasses> classes = readSrd.readClassesJson();
     List<The5EClassLevels> classLevels = readSrd.readClassLevelsJson();
@@ -65,13 +71,23 @@ void Main()
 
     // ------- Feats ---------
     List<The5EFeats> feats = readSrd.readFeatsJson();
+    var theFeats = feats.Select(theFeat => Extensions.ToFeatDto(theFeat));
 
+    readSrd.WriteJson("feats", theFeats);
+    
     // ------- Spells --------
     List<The5ESpells> spells = readSrd.readSpellsJson();
+    List<SpellsTwo5E> spells2 = readSrd.readSpellsTwoJson();
+    List<The5ESrdSpellsJson> spells3 = readSrd.readSrdSpellsJson();
 
-    // ------- Equipment --------
-    
+    var theSpells = spells2.Select(spell => Extensions.ToSpellDto(spell,spells,spells3)).Where(x => x.Name != string.Empty);
+
+    readSrd.WriteJson("spells", theSpells);
+
+
+
 }
+
 
 Main();
 

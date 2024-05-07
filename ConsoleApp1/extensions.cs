@@ -21,10 +21,15 @@ namespace MyExtensions
     using DndBackgroundsJson;
     using DndLanguagesJson;
     using DndEquipmentCategoryJson;
+    using DndFeatsJson;
+    using SpellsDto;
+    using DndSpellsJson;
+    using SecondSpells5e;
+    using SRDSpellsjson;
 
     public static class Extensions
     {
-        private static void AddString(this Dictionary<string, string> dictionary, string key, object? value) 
+        private static void AddString(this Dictionary<string, string> dictionary, string key, object? value)
         {
             if (value != null)
             {
@@ -33,7 +38,115 @@ namespace MyExtensions
             }
         }
 
-        
+
+
+        public static Item ToItemDto(The5EEquipment the5EEquipment, bool logs = false)
+        {
+            var getItemType = (The5EEquipment eqipment) =>
+            {
+                if (eqipment.WeaponCategory != null)
+                {
+                    return "Weapon";
+                }
+                else if (eqipment.ArmorCategory != null)
+                {
+                    return "Armor";
+                }
+                else
+                {
+                    return "Item";
+                }
+            };
+            var getItem = (string type) =>
+            {
+                if (type == "Weapon")
+                {
+                    return new Weapon();
+                }
+                else if (type == "Armor")
+                {
+                    return new Armor();
+                }
+                else
+                {
+                    return new Item();
+                }
+            };
+            var itemType = getItemType(the5EEquipment);
+            var newItem = getItem(itemType);
+            newItem.Name = the5EEquipment.Name;
+            newItem.EquipmentCategory = the5EEquipment.EquipmentCategory.ToString();
+            newItem.Cost = new ConsoleApp1.models.DTO.Cost
+            {
+                Quantity = (int)the5EEquipment.Cost.Quantity,
+                Unit = the5EEquipment.Cost.Unit.ToString()
+            };
+            newItem.Weight = (int?)the5EEquipment.Weight;
+
+            if (the5EEquipment.Properties != null && the5EEquipment.Properties.Count() > 0)
+            {
+                newItem.Tags = the5EEquipment.Properties.Select(x => x.Name).ToList();
+            }
+
+            if (the5EEquipment.Desc != null)
+            {
+                newItem.Desc = the5EEquipment.Desc;
+            }
+
+            if (itemType == "Weapon")
+            {
+                newItem = (Weapon)newItem;
+                ((Weapon)newItem).WeaponCategory = the5EEquipment.WeaponCategory.ToString();
+                ((Weapon)newItem).WeaponRange = the5EEquipment.WeaponRange.ToString();
+                ((Weapon)newItem).CategoryRange = the5EEquipment.CategoryRange.ToString();
+                ((Weapon)newItem).Damage = new List<ConsoleApp1.models.DTO.Damage>
+                {
+                    new ConsoleApp1.models.DTO.Damage
+                    {
+                        DamageDice = the5EEquipment.Damage.DamageDice,
+                        DamageBonus = (int)the5EEquipment.Damage.DamageBonus,
+                        DamageType = the5EEquipment.Damage.DamageType.Name.ToString()
+                    }
+                };
+                ((Weapon)newItem).Range = new ConsoleApp1.models.DTO.Range
+                {
+                    Normal = (int)the5EEquipment.Range.Normal,
+                    Long = (int)(the5EEquipment.Range.Long ?? 0)
+                };
+            }
+            else if (itemType == "Armor")
+            {
+                newItem = (Armor)newItem;
+                ((Armor)newItem).ArmorCategory = the5EEquipment.ArmorCategory.ToString();
+                ((Armor)newItem).StealthDisadvantage = (bool)(the5EEquipment.StealthDisadvantage ?? false);
+                ((Armor)newItem).StrMin = (int)(the5EEquipment.StrMinimum ?? 0);
+                ((Armor)newItem).ArmorClass = new ConsoleApp1.models.DTO.ArmorClass
+                {
+                    Base = (int)the5EEquipment.ArmorClass.Base,
+                    DexBonus = the5EEquipment.ArmorClass.DexBonus,
+                    MaxBonus = (int?)the5EEquipment.ArmorClass.MaxBonus
+                };
+            }
+
+            return newItem;
+        }
+
+        public static FeatEntity ToFeatDto(The5EFeats the5EFeats, bool logs = false)
+        {
+            var newFeat = new FeatEntity();
+            newFeat.Name = the5EFeats.Name;
+            newFeat.Desc = the5EFeats.Desc;
+            newFeat.PreReqs = the5EFeats.Prerequisites.Select(x => new Feature<string, string>
+            {
+                Info = new Info<string>
+                {
+                    Type = "AbilityScore"
+                },
+                Name = x.AbilityScore.Name,
+                Value = x.MinimumScore.ToString()
+            }).ToList();
+            return newFeat;
+        }
 
         public static BackgroundEntity ToBackgroundDto(The5EBackgrounds the5EBackgrounds, List<The5EProficency> proficency, List<The5ELanguages> languages, List<The5EEquipment> equipment, bool logs = false)
         {
@@ -55,7 +168,7 @@ namespace MyExtensions
             {
                 Item = x.Equipment.Name,
                 Quantity = (int)x.Quantity
-                
+
             }).ToList();
             newBackground.StartingEquipmentChoices = the5EBackgrounds.StartingEquipmentOptions.Select(x => new EquipmentChoicesDto
             {
@@ -201,7 +314,9 @@ namespace MyExtensions
                                 Value = (int)x.Bonus
                             })
                             .ToList() ?? new List<Feature<int, string>>();
-                    } else {
+                    }
+                    else
+                    {
                         newSubRace.AbilityBonusChoice = null;
                     }
                     newSubRace.Alignment = subRace.Alignment;
@@ -216,22 +331,24 @@ namespace MyExtensions
                             Value = x.Name
                         })
                         .ToList();
-                        if (subRace.StartingProficiencyOptions != null)
-                        {
-                            newSubRace.StartingProficenciesChoice = new ChoicesEntity<Feature<string, string>>();
-                            newSubRace.StartingProficenciesChoice.Choose = (int)subRace.StartingProficiencyOptions.Choose;
-                            newSubRace.StartingProficenciesChoice.Type = subRace.StartingProficiencyOptions.Type != null ? subRace.StartingProficiencyOptions.Type.ToString() : string.Empty;
-                            newSubRace.StartingProficenciesChoice.Choices = proficency
-                                .Where(x => subRace.StartingProficiencyOptions.From?.Select(y => y.Name).Contains(x.Name) ?? false)
-                                .Select(x => new Feature<string, string>
-                                {
-                                    Name = x.Name,
-                                    Value = x.Type.ToString()
-                                })
-                                .ToList();
-                        } else {
-                            newSubRace.StartingProficenciesChoice = null;
-                        }
+                    if (subRace.StartingProficiencyOptions != null)
+                    {
+                        newSubRace.StartingProficenciesChoice = new ChoicesEntity<Feature<string, string>>();
+                        newSubRace.StartingProficenciesChoice.Choose = (int)subRace.StartingProficiencyOptions.Choose;
+                        newSubRace.StartingProficenciesChoice.Type = subRace.StartingProficiencyOptions.Type != null ? subRace.StartingProficiencyOptions.Type.ToString() : string.Empty;
+                        newSubRace.StartingProficenciesChoice.Choices = proficency
+                            .Where(x => subRace.StartingProficiencyOptions.From?.Select(y => y.Name).Contains(x.Name) ?? false)
+                            .Select(x => new Feature<string, string>
+                            {
+                                Name = x.Name,
+                                Value = x.Type.ToString()
+                            })
+                            .ToList();
+                    }
+                    else
+                    {
+                        newSubRace.StartingProficenciesChoice = null;
+                    }
                     newSubRace.Languages = subRace.Languages.Select(x => x.Name).ToList();
                     if (subRace.LanguageOptions != null)
                     {
@@ -239,7 +356,8 @@ namespace MyExtensions
                         newSubRace.LanguageChoice.Choose = (int)(subRace.LanguageOptions.Choose ?? 0);
                         newSubRace.LanguageChoice.Type = subRace.LanguageOptions.Type != null ? subRace.LanguageOptions.Type.ToString() : string.Empty;
                         newSubRace.LanguageChoice.Choices = subRace.LanguageOptions.From?.Select(x => x.Name).ToList() ?? new List<string>();
-                    } else
+                    }
+                    else
                     {
                         newSubRace.LanguageChoice = null;
                     }
@@ -265,19 +383,21 @@ namespace MyExtensions
                                 Value = x.Desc
                             })
                             .ToList();
-                    } else
+                    }
+                    else
                     {
                         newSubRace.TraitChoice = null;
                     }
                     return newSubRace;
                 }).ToList();
-            } else
+            }
+            else
             {
                 newRace.SubRaces = new List<SubRaceEntity>();
             }
-            
+
             return newRace;
-        } 
+        }
 
         public static ClassDto ToClassDto(The5EClasses the5EClasses, List<The5EClassLevels> classLevels, List<The5ESubClasses> subClasses, List<The5EFeatures> features, List<The5EStartingEquipment> startingEquipment, List<The5EEquipment> equipment, List<The5ESpellcasting> spellCasting, bool logs = false)
         {
@@ -342,7 +462,8 @@ namespace MyExtensions
                             Choice = newChoice,
                             Desc = x.Desc
                         };
-                    } else
+                    }
+                    else
                     {
                         newFeature.Value = x.Desc;
                     }
@@ -366,12 +487,14 @@ namespace MyExtensions
                     if (logs) Console.WriteLine("    ProfBonus");
                     // classLevel.FeatureChoices = x.Features.Select(y => y.Name).ToList();
                     if (logs) Console.WriteLine("    Writing Features!");
-                    var currLevel = levelFeatures.Count() > 0 ? levelFeatures.DistinctBy(x => x.Name).Select(x => {
-                            if (x != null) return x;
-                            return new The5EFeatures();
-                        }).ToList() : new List<The5EFeatures>();
+                    var currLevel = levelFeatures.Count() > 0 ? levelFeatures.DistinctBy(x => x.Name).Select(x =>
+                    {
+                        if (x != null) return x;
+                        return new The5EFeatures();
+                    }).ToList() : new List<The5EFeatures>();
                     if (logs) Console.WriteLine($"     {currLevel.Where(x => x.Level == currentLevel).Count()} features to add!");
-                    levelEntity.Features = currLevel.Where(x => x.Level == currentLevel).Select(feature => {
+                    levelEntity.Features = currLevel.Where(x => x.Level == currentLevel).Select(feature =>
+                    {
                         var newFeature = new Feature<object, string>();
                         if (logs) Console.WriteLine($"     Adding Feature {feature.Name}");
                         newFeature.Name = feature.Name;
@@ -380,7 +503,7 @@ namespace MyExtensions
                         newFeature.Info.SubclassName = classLevel.Subclass.Name;
                         newFeature.Value = features.Where(x => x.Name == feature.Name).Select(x => new BaseDesc { Name = x.Name, Desc = x.Desc }).ToList().First();
 
-                    return newFeature;
+                        return newFeature;
                     }).ToList();
                     //var levelClassSpecific = new Feature<object, string>();
                     ClassSpecific classSpecific = classLevel.ClassSpecific ?? new ClassSpecific();
@@ -501,9 +624,85 @@ namespace MyExtensions
             return newClass;
         }
 
+        public static SpellDto ToSpellDto(SpellsTwo5E spellsTwo5E, List<The5ESpells> the5ESpells, List<The5ESrdSpellsJson> the5ESrdSpellsJson, bool logs = false)
+        {
+            var newSpell = new SpellDto();
+            var spell2 = the5ESpells.Where(x => x.Name == spellsTwo5E.Name).FirstOrDefault();
+            var spell3 = the5ESrdSpellsJson.Where(x => x.Name == spellsTwo5E.Name).FirstOrDefault();
+            if (spell2 != null && spell3 != null)
+            {
+                if (logs) Console.WriteLine(" Writing Spells!");
+                if (spellsTwo5E != null)
+                {
+                    if(spellsTwo5E.Components.Material == true)
+                    {
+                        newSpell.Name = spellsTwo5E.Name;
+                        newSpell.Desc = spellsTwo5E.Description;
+                        newSpell.Duration = spellsTwo5E.Duration;
+                        newSpell.Range = spellsTwo5E.Range;
+                        newSpell.Ritual = spellsTwo5E.Ritual;
+                        newSpell.School = spellsTwo5E.School.ToString();
+                        newSpell.CastingTime = spellsTwo5E.CastingTime;
+                        newSpell.IsMaterial = spellsTwo5E.Components.Material;
+                        newSpell.IsSomatic = spellsTwo5E.Components.Somatic;
+                        newSpell.IsVerbal = spellsTwo5E.Components.Verbal;
+                        newSpell.Materials_Needed = spellsTwo5E.Components.MaterialsNeeded != null ? String.Join(", ", spellsTwo5E.Components.MaterialsNeeded): null;
+                    } 
+                    if (spellsTwo5E.HigherLevels != null) {
+                    newSpell.Name = spellsTwo5E.Name;
+                        newSpell.Desc = spellsTwo5E.Description;
+                        newSpell.Duration = spellsTwo5E.Duration;
+                        newSpell.Range = spellsTwo5E.Range;
+                        newSpell.Ritual = spellsTwo5E.Ritual;
+                        newSpell.School = spellsTwo5E.School.ToString();
+                        newSpell.CastingTime = spellsTwo5E.CastingTime;
+                        newSpell.IsMaterial = spellsTwo5E.Components.Material;
+                        newSpell.IsSomatic = spellsTwo5E.Components.Somatic;
+                        newSpell.IsVerbal = spellsTwo5E.Components.Verbal;
+                        newSpell.HigherLevel = spellsTwo5E.HigherLevels; 
+                    } else {
+                        newSpell.Name = spellsTwo5E.Name;
+                        newSpell.Desc = spellsTwo5E.Description;
+                        newSpell.Duration = spellsTwo5E.Duration;
+                        newSpell.Range = spellsTwo5E.Range;
+                        newSpell.Ritual = spellsTwo5E.Ritual;
+                        newSpell.School = spellsTwo5E.School.ToString();
+                        newSpell.CastingTime = spellsTwo5E.CastingTime;
+                        newSpell.IsMaterial = spellsTwo5E.Components.Material;
+                        newSpell.IsSomatic = spellsTwo5E.Components.Somatic;
+                        newSpell.IsVerbal = spellsTwo5E.Components.Verbal;
+                    }
+                    
+                } else {
+                    Console.WriteLine($"Could not find the spellsTwo5E Json! for {spellsTwo5E.Name}");
+                }
+                if (spell2 != null)
+                {
+                    newSpell.Concentration = spell2.Concentration;
+                    newSpell.Page = spell2.Page;
+                    newSpell.Classes = spell2.Classes.Select(x => x.Name.ToString()).ToList();
+                    newSpell.SubClasses = spell2.Subclasses.Select(x => x.Name.ToString()).ToList();
+                    newSpell.Level = spell2.Level.ToString();
+                } else {
+                    Console.WriteLine($"Could not find the The5ESpells Json! for {spellsTwo5E.Name}");
+                }
+                if (spell3 != null)
+                {
+                    if(spell3.Damage != null && spell3.Damage.DamageType != null){
+                        newSpell.DamageType = spell3.Damage.DamageType.Name;
+                    } else {
+                        if(logs) Console.WriteLine($"Could not find the the5ESrdSpellsJson Json! for {spellsTwo5E.Name} "); 
+                        
+                    }
+                } else {
+                    if(logs) Console.WriteLine($"Could not find the the5ESrdSpellsJson Json! for {spellsTwo5E.Name} "); 
+                }   
+            } else {
+                if (logs) Console.WriteLine($"Could not find the {spellsTwo5E.Name} in the json files!");
+            }
 
+            return newSpell;
+        }
 
-    };
-
-
+    }
 }

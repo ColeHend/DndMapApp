@@ -21,6 +21,9 @@ using Newtonsoft.Json;
 using DndProficencyJson;
 using DndBackgroundsJson;
 using DndFeatsJson;
+using SecondSpells5e;
+using SRDSpellsjson;
+
 
 class ReadSrd
 {
@@ -105,6 +108,29 @@ class ReadSrd
             return The5ESpells.FromJson(json);
         }
     }
+    public List<SpellsTwo5E> readSpellsTwoJson()
+    {
+        using (StreamReader r = new StreamReader("./srdJson/spells2.json"))
+        {
+            string json = r.ReadToEnd();
+            return SpellsTwo5E.FromJson(json);
+        }
+    }
+    
+    public List<The5ESrdSpellsJson> readSrdSpellsJson()
+    {
+        using (StreamReader r = new StreamReader("./srdJson/5e-SRD-Spells.json"))
+        {
+            string json = r.ReadToEnd();
+            return The5ESrdSpellsJson.FromJson(json);
+        }
+    }
+
+    // Other Spell Lists to add to make a json file
+
+    //---------- Xanathar's Guide to Everything ----------
+
+    //---------- Tasha's Cauldron of Everything ----------
 
     public List<The5EAbilityScore> readAbilityScoreJson()
     {
